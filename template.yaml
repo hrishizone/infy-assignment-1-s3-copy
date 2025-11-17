@@ -2,6 +2,8 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Auto-copy objects from one S3 bucket to another using Lambda trigger
 
 Parameters:
+  DeploymentBucketName:
+    Type: String
   DeploymentObjectKey:
     Type: String
     Description: S3 key for the Lambda zip file
@@ -63,7 +65,7 @@ Resources:
         Variables:
           DESTINATION_BUCKET: !Sub "${AWS::StackName}-dest"
       Code:
-        S3Bucket: "${AWS::StackName}-artifacts"
+        S3Bucket: !Ref DeploymentBucketName
         S3Key: !Ref DeploymentObjectKey
       Timeout: 30
       MemorySize: 128

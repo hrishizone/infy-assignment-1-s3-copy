@@ -88,6 +88,7 @@ def main_func():
         template_body = f.read()
 
     params = [
+        {"ParameterKey": "DeploymentBucketName", "ParameterValue": deployment_bucket},
         {"ParameterKey": "DeploymentObjectKey", "ParameterValue": deployment_key}
     ]
 
