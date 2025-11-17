@@ -63,7 +63,7 @@ Resources:
         Variables:
           DESTINATION_BUCKET: !Sub "${AWS::StackName}-dest"
       Code:
-        S3Bucket: !Ref DeploymentBucket
+        S3Bucket: "${AWS::StackName}-artifacts"
         S3Key: !Ref DeploymentObjectKey
       Timeout: 30
       MemorySize: 128
