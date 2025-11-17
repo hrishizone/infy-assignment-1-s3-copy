@@ -58,6 +58,19 @@ def deploy_stack(cloudformation_client, template_body, params):
     waiter.wait(StackName=STACK_NAME)
     logger.info("Stack creation/update complete!")
 
+def ensure_bucket_exists(bucket, s3):
+    try:
+        s3.head_bucket(Bucket=bucket)
+        logger.info("Bucket %s already exists", bucket)
+    except botocore.exceptions.ClientError:
+        logger.info("Bucket %s does not exist, creating...", bucket)
+        s3.create_bucket(
+            Bucket=bucket,
+            CreateBucketConfiguration={"LocationConstraint": "ap-south-1"}
+        )
+        logger.info("Bucket %s created successfully", bucket)
+
+
 def main_func():
     deployment_key = "lambda_artifact.zip"
     zip_lambda("Lambda_Function", deployment_key)
@@ -65,20 +78,19 @@ def main_func():
     s3 = boto3.client("s3")
     cloudformation_client = boto3.client("cloudformation")
 
-    # Upload ZIP to artifacts bucket created by CFN
     deployment_bucket = f"{STACK_NAME}-artifacts"
+
+    ensure_bucket_exists(deployment_bucket, s3)
+
     upload_artifact(deployment_bucket, deployment_key, deployment_key, s3)
 
-    # Read template
     with open("template.yaml") as f:
         template_body = f.read()
 
-    # CFN parameters
     params = [
         {"ParameterKey": "DeploymentObjectKey", "ParameterValue": deployment_key}
     ]
 
-    # Deploy/update stack
     deploy_stack(cloudformation_client, template_body, params)
 
 
