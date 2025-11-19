@@ -36,27 +36,46 @@ def deploy_stack(cloudformation_client, template_body, params):
         exists = False
 
     if exists:
-        logger.info("Updating stack:")
-        resp = cloudformation_client.update_stack(
-            StackName=STACK_NAME,
-            TemplateBody=template_body,
-            Parameters=params,
-            Capabilities=['CAPABILITY_NAMED_IAM']
-        )
-        waiter = cloudformation_client.get_waiter('stack_update_complete')
+        logger.info("Updating stack ...")
+
+        try:
+            resp = cloudformation_client.update_stack(
+                StackName=STACK_NAME,
+                TemplateBody=template_body,
+                Parameters=params,
+                Capabilities=['CAPABILITY_NAMED_IAM']
+            )
+
+            logger.info("Stack update initiated: %s", resp['StackId'])
+
+            waiter = cloudformation_client.get_waiter('stack_update_complete')
+            waiter.wait(StackName=STACK_NAME)
+
+            logger.info("Stack update completed successfully!")
+
+        except botocore.exceptions.ClientError as e:
+            if "No updates are to be performed" in str(e):
+                logger.info("No updates required — Stack is already up-to-date.")
+                return
+            raise
+        
     else:
-        logger.info("Creating stack:")
+        logger.info("Creating new stack ...")
+
         resp = cloudformation_client.create_stack(
             StackName=STACK_NAME,
             TemplateBody=template_body,
             Parameters=params,
             Capabilities=['CAPABILITY_NAMED_IAM']
         )
-        waiter = cloudformation_client.get_waiter('stack_create_complete')
 
-    logger.info("Stack operation started: %s", resp['StackId'])
-    waiter.wait(StackName=STACK_NAME)
-    logger.info("Stack creation/update complete!")
+        logger.info("Stack creation initiated: %s", resp['StackId'])
+
+        waiter = cloudformation_client.get_waiter('stack_create_complete')
+        waiter.wait(StackName=STACK_NAME)
+
+        logger.info("Stack creation completed successfully!")
+
 
 def ensure_bucket_exists(bucket, s3):
     try:
