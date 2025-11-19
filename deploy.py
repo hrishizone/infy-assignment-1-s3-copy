@@ -5,8 +5,13 @@ import botocore
 import logging
 
 
-logging.basicConfig(filename="logs.log", level=logging.INFO,
-                    format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler()          
+    ]
+)
 logger = logging.getLogger()
 
 STACK_NAME = "assignment-1-s3-sync"
@@ -58,7 +63,7 @@ def deploy_stack(cloudformation_client, template_body, params):
                 logger.info("No updates required — Stack is already up-to-date.")
                 return
             raise
-        
+
     else:
         logger.info("Creating new stack ...")
 
