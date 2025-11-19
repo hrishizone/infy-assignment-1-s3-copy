@@ -60,7 +60,7 @@ def deploy_stack(cloudformation_client, template_body, params):
 
         except botocore.exceptions.ClientError as e:
             if "No updates are to be performed" in str(e):
-                logger.info("No updates required — Stack is already up-to-date.")
+                logger.info("Stack is already up-to-date.")
                 return
             raise
 
