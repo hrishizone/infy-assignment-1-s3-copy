@@ -7,6 +7,10 @@ Parameters:
   DeploymentObjectKey:
     Type: String
     Description: S3 key for the Lambda zip file
+  DeploymentObjectVersion:
+    Type: String
+    Description: S3 object version
+
 
 Resources:
   SourceBucket:
@@ -67,6 +71,7 @@ Resources:
       Code:
         S3Bucket: !Ref DeploymentBucketName
         S3Key: !Ref DeploymentObjectKey
+        S3ObjectVersion: !Ref DeploymentObjectVersion
       Timeout: 30
       MemorySize: 128
 

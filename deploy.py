@@ -94,6 +94,11 @@ def ensure_bucket_exists(bucket, s3):
         )
         logger.info("Bucket %s created successfully", bucket)
 
+    logger.info("Enabling bucket versioning on %s", bucket)
+    s3.put_bucket_versioning(
+        Bucket=bucket,
+        VersioningConfiguration={"Status": "Enabled"}
+    )
 
 def main_func():
     deployment_key = "lambda_artifact.zip"
@@ -108,12 +113,17 @@ def main_func():
 
     upload_artifact(deployment_bucket, deployment_key, deployment_key, s3)
 
+    obj = s3.head_object(Bucket=deployment_bucket, Key=deployment_key)
+    version_id = obj["VersionId"]
+    logger.info("Uploaded S3 Object Version: %s", version_id)
+
     with open("template.yaml") as f:
         template_body = f.read()
 
     params = [
         {"ParameterKey": "DeploymentBucketName", "ParameterValue": deployment_bucket},
-        {"ParameterKey": "DeploymentObjectKey", "ParameterValue": deployment_key}
+        {"ParameterKey": "DeploymentObjectKey", "ParameterValue": deployment_key},
+        {"ParameterKey": "DeploymentObjectVersion", "ParameterValue": version_id}
     ]
 
     deploy_stack(cloudformation_client, template_body, params)
