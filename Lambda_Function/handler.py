@@ -13,6 +13,7 @@ def lambda_handler(event, context):
     logger.info("Received event: %s", event)
     for record in event.get("Records", []):
         if record.get("eventSource") != "aws:s3":
+            logger.warning("Skipping non-S3 event: %s", record)
             continue
         src_bucket = record["s3"]["bucket"]["name"]
         logger.info("Received Key: %s", record["s3"]["object"]["key"])
